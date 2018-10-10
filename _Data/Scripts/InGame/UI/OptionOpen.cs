@@ -53,8 +53,16 @@ public class OptionOpen : MonoBehaviour
 
         InitialCamPos = Camera.main.transform.position;
 
-        
+        if(!pingsign.CanMakePing)
+        {
+            Invoke("PingReset", 7.0f);
+        }
 
     }
 
+    private void PingReset()
+    {
+        pingsign.CanMakePing = true;
+        pingsign.MakeCount = 0;
+    }
 }   

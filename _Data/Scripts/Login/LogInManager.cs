@@ -30,7 +30,6 @@ public class LogInManager : MonoBehaviour
     {
         // B668 근우
         PlayFabSettings.TitleId = "5C01";
-        video.GetComponent<VideoPlayer>().Play();
     }
 
     public void ID_value_Changed()

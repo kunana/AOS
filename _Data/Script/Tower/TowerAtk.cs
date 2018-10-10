@@ -48,7 +48,7 @@ public class TowerAtk : MonoBehaviour
             AddEnemiesList(other);
         }
         else if (other.tag.Equals("Player"))
-        {   
+        {
             if (other.GetComponent<ChampionBehavior>().Team.Equals(enemyColor))
                 AddEnemiesList(other);
         }
@@ -67,7 +67,7 @@ public class TowerAtk : MonoBehaviour
         }
     }
 
-    private void AddEnemiesList(Collider other)
+    public void AddEnemiesList(Collider other)
     {
         if (!enemiesList.Contains(other.gameObject))
             enemiesList.Add(other.gameObject);

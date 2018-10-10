@@ -14,6 +14,9 @@ public class PingSign : MonoBehaviour
     private Camera TargetCamera;
 
     private bool MakeOnce = false;
+    public int MakeCount;
+    public int MakeMaxCount;
+    public bool CanMakePing = true;
 
     public Vector3 InitialCoordinate;
     private LineRenderer LineR;
@@ -34,12 +37,18 @@ public class PingSign : MonoBehaviour
         LineR = GetComponent<LineRenderer>();
         LineR.enabled = false;
 
-        if (pingPool.Equals(null))
+        if(pingPool.Equals(null))
+        {
             GameObject.FindGameObjectWithTag("PingPool").GetComponent<PingPooling>();
+        }
+        else
+        {
+            MakeCount = pingPool.MakeCount;
+            MakeMaxCount = pingPool.MakeMaxCount;
+        }
 
         this.gameObject.SetActive(false);
     }
-
     private void OnEnable()
     {
         Mouse = Input.mousePosition;
@@ -47,38 +56,29 @@ public class PingSign : MonoBehaviour
         transform.position = Camera.main.ScreenToWorldPoint(screenPoint);
         startPos = transform.position; // UI 위치 조정
 
-        // Line렌더 시작점 조정
         LineR.positionCount = 2;
-        LineR.SetPosition(0, startPos);
+        LineR.SetPosition(0, startPos); // Line렌더 시작점 조정
 
         InitialCameraPos = Camera.main.transform.position;
         plane = new Plane(-transform.forward, transform.position);
 
+        //PhotonNetwork.RaiseEvent +=  동기화 함수
     }
 
     private void Update()
     {
 
-        if (PhotonNetwork.player.IsLocal)
+        if (Input.GetKey(KeyCode.LeftAlt) && Input.GetMouseButton(1)) //챔피언 클릭시 타겟 마킹
         {
-            if (InitialCameraPos != Camera.main.transform.position) // 카메라가 움직였는가?
-            {
-                return;
-            }
 
-            //if (Input.GetKey(KeyCode.LeftAlt) && Input.GetMouseButton(1)) //챔피언 클릭시 타겟 마킹
-            //{
-            //    //GetFxPool("Target",챔피언 위치);
-            //}
+            //GetFxPool("Target",챔피언 위치);
 
+        }
+
+        else if (InitialCameraPos.Equals(Camera.main.transform.position)) // 카메라가 움직였는가?
+        {
             if (Input.GetKey(KeyCode.LeftAlt) && Input.GetMouseButton(0))
             {
-                if (InitialCameraPos != Camera.main.transform.position) // 카메라가 움직였는가?
-                {
-                    this.gameObject.SetActive(false);
-                    return;
-                }
-
                 LineR.enabled = true;
 
                 //라인렌더 종료지점 설정
@@ -91,10 +91,9 @@ public class PingSign : MonoBehaviour
                 sign = GetMousePos(startPos, endPos);
             }
 
-
             if (LineR.enabled && Input.GetMouseButtonUp(0))
             {
-                if (!pingPool.CanMakePing) //핑 횟수제한을 넘었다면
+                if (!CanMakePing) //핑 횟수제한을 넘었다면
                 {
                     //사용할수없습니다 메세지 출력
                     gameObject.SetActive(false);
@@ -113,13 +112,9 @@ public class PingSign : MonoBehaviour
                 {
                     if (hit.collider.gameObject.layer.Equals(LayerMask.NameToLayer("GroundLayer")))
                     {
-                        if (!MakeOnce)
-                        {
-                            MakeOnce = true;
-                            // 타겟을 레이캐스트가 충돌된 곳으로 옮긴다.
-                            InitialCoordinate = hit.point;
-                            MakePingSign();
-                        }
+                        // 타겟을 레이캐스트가 충돌된 곳으로 옮긴다.
+                        InitialCoordinate = hit.point;
+                        MakePingSign();
                     }
                 }
 
@@ -128,9 +123,12 @@ public class PingSign : MonoBehaviour
                 this.gameObject.SetActive(false);
             }
         }
+        else // 카메라가 움직인다면
+        {
+            gameObject.SetActive(false);
+        }
+        // 동기화
     }
-
-
 
     private Sign GetMousePos(Vector3 StartPos, Vector3 endPos)
     {
@@ -150,31 +148,34 @@ public class PingSign : MonoBehaviour
 
     private void MakePingSign()
     {
-        if (pingPool.MakeCount >= pingPool.MakeMaxCount)
-        {
-            print("생성할수 없다.");
-        }
-        else
+        if (!MakeOnce)
         {
             switch (sign)
             {
                 case Sign.Help:
-                    pingPool.GetFxPool("Help", InitialCoordinate, false);
+                    pingPool.GetFxPool("Help", InitialCoordinate);
                     break;
                 case Sign.Missing:
-                    pingPool.GetFxPool("Missing", InitialCoordinate, false);
+                    pingPool.GetFxPool("Missing", InitialCoordinate);
                     break;
                 case Sign.Danger:
-                    pingPool.GetFxPool("Danger", InitialCoordinate, false);
+                    pingPool.GetFxPool("Danger", InitialCoordinate);
                     break;
                 case Sign.Going:
-                    pingPool.GetFxPool("Going", InitialCoordinate, false);
+                    pingPool.GetFxPool("Going", InitialCoordinate);
                     break;
                 case Sign.Exit:
                     break;
             }
             pingPool.MakeCount++;
+            if (pingPool.MakeCount >= pingPool.MakeMaxCount)
+            {
+                CanMakePing = false;
+            }
+            MakeOnce = false;
         }
-        MakeOnce = false;
     }
+
+    
 }
+
