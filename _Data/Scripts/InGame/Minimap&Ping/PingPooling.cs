@@ -2,35 +2,19 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class PingPooling : Photon.PunBehaviour
-{
+public class PingPooling : MonoBehaviour {
 
     //풀링
-    public GameObject[] FxPrefabs = new GameObject[6];
-    public List<GameObject> HelpPool = new List<GameObject>();
-    public List<GameObject> DangerPool = new List<GameObject>();
-    public List<GameObject> TargetPool = new List<GameObject>();
-    public List<GameObject> MissingPool = new List<GameObject>();
-    public List<GameObject> GoingPool = new List<GameObject>();
-    public List<GameObject> HerePool = new List<GameObject>();
+    public GameObject[] FxPrefabs = new GameObject[5];
+    protected List<GameObject> HelpPool = new List<GameObject>();
+    protected List<GameObject> DangerPool = new List<GameObject>();
+    protected List<GameObject> TargetPool = new List<GameObject>();
+    protected List<GameObject> MissingPool = new List<GameObject>();
+    protected List<GameObject> GoingPool = new List<GameObject>();
+    protected Vector3 adjustHeight = new Vector3(0, 1.4f, 0);
 
-    public Vector3 adjustHeight = new Vector3(0, 1.4f, 0);
-
-    //핑 횟수 제어
     public int MakeCount = 0;
     public int MakeMaxCount = 7;
-    public float PingResetTime = 7f;
-    public bool CanMakePing = true;
-
-    //레이
-    Vector3 pos = Vector3.zero;
-    Ray ray;
-    RaycastHit[] hits;
-
-    //동기화용 변수
-    private byte MyEventGroup = 0;
-    private GameObject Player;
-    private string SenderName;
 
     private void Awake()
     {
@@ -40,72 +24,6 @@ public class PingPooling : Photon.PunBehaviour
         MakeFxPool("Help");
         MakeFxPool("Danger");
         MakeFxPool("Target");
-        MakeFxPool("Here");
-        //동기화
-        SenderName = PlayerData.Instance.championName;
-        Player = GameObject.FindGameObjectWithTag("Player");
-    }
-
-    private void OnEnable()
-    {
-        if (PhotonNetwork.player.IsLocal)
-        {
-            if (PhotonNetwork.player.GetTeam().ToString().Equals("red"))
-                MyEventGroup = 10;
-            else
-                MyEventGroup = 20;
-        }
-
-        PhotonNetwork.OnEventCall += SyncPing;
-    }
-
-    private void Update()
-    {
-        if (!CanMakePing)
-        {
-            print("핑 카운트 리셋");
-            Invoke("PingReset", 7.0f);
-        }
-
-        if (Input.GetKeyDown(KeyCode.G) && CanMakePing)
-        {
-            GetFxPool("Here", MakePing(), false);
-            MakeCount++;
-        }
-
-    }
-
-    private Vector3 MakePing()
-    {
-        pos = Vector3.zero;
-        ray = Camera.main.ScreenPointToRay(Input.mousePosition); // 마우스 좌표를 기준으로  스크린을투과하는 레이
-        hits = Physics.RaycastAll(ray);
-        foreach (RaycastHit hit in hits)
-        {
-            if (hit.collider.gameObject.layer.Equals(LayerMask.NameToLayer("GroundLayer")))
-            {
-                pos = hit.point;
-            }
-        }
-        return pos;
-    }
-
-    public void PingReset()
-    {
-        CanMakePing = true;
-    }
-
-    private void SyncPing(byte eventCode, object content, int senderId)
-    {
-        if (eventCode.Equals(MyEventGroup))
-        {
-            PhotonPlayer sender = PhotonPlayer.Find(senderId);
-            object[] datas = content as object[];
-            if (datas.Length.Equals(4) && sender != PhotonNetwork.player)
-            {
-                GetFxPool((string)datas[0], (Vector3)datas[1], true);
-            }
-        }
     }
 
     //Fx 풀링
@@ -165,32 +83,11 @@ public class PingPooling : Photon.PunBehaviour
                 fx.gameObject.layer = 12;
             }
         }
-        else if (name.Equals("Here"))
-        {
-            for (int i = 0; i < MakeMaxCount; i++)
-            {
-                var fx = Instantiate(FxPrefabs[5], transform);
-                HerePool.Add(fx);
-                fx.transform.position = Vector3.zero;
-                fx.gameObject.SetActive(false);
-                fx.gameObject.layer = 12;
-            }
-        }
     }
 
-    private void SendPING_Myteam(string name, Vector3 pos) // 레이즈이벤트. 핑 프리팹 이름, 월드 좌표, 샌더챔피언 이름, 샌더의 포지션
-    {
-        byte evCode = MyEventGroup;
-        object[] content = new object[] { name, pos, SenderName, Player.transform.position };
-
-        RaiseEventOptions raiseEventOptions = new RaiseEventOptions { CachingOption = EventCaching.DoNotCache, Receivers = ReceiverGroup.All};
-        PhotonNetwork.RaiseEvent(evCode, content, false, raiseEventOptions);
-    }
-
-    public void GetFxPool(string name, Vector3 pos, bool islocal)
+    public void GetFxPool(string name, Vector3 pos)
     {
         GameObject fx = null;
-
         if (name.Equals("Help"))
         {
             if (HelpPool.Count <= 0)
@@ -198,7 +95,6 @@ public class PingPooling : Photon.PunBehaviour
 
             fx = HelpPool[0];
             HelpPool.RemoveAt(0);
-            HelpPool.Add(fx);
         }
         else if (name.Equals("Missing"))
         {
@@ -207,7 +103,6 @@ public class PingPooling : Photon.PunBehaviour
 
             fx = MissingPool[0];
             MissingPool.RemoveAt(0);
-            MissingPool.Add(fx);
         }
         else if (name.Equals("Going"))
         {
@@ -216,7 +111,6 @@ public class PingPooling : Photon.PunBehaviour
 
             fx = GoingPool[0];
             GoingPool.RemoveAt(0);
-            GoingPool.Add(fx);
         }
         else if (name.Equals("Target"))
         {
@@ -225,36 +119,17 @@ public class PingPooling : Photon.PunBehaviour
 
             fx = TargetPool[0];
             TargetPool.RemoveAt(0);
-            TargetPool.Add(fx);
         }
         else if (name.Equals("Danger"))
         {
             if (DangerPool.Count <= 0)
                 MakeFxPool("Danger");
-
             fx = DangerPool[0];
             DangerPool.RemoveAt(0);
-            DangerPool.Add(fx);
-        }
-        else if (name.Equals("Here"))
-        {
-            if (HerePool.Count <= 0)
-                MakeFxPool("Here");
-
-            fx = HerePool[0];
-            HerePool.RemoveAt(0);
-            HerePool.Add(fx);
 
         }
-
         fx.transform.position = pos;
         fx.transform.position = pos + adjustHeight;
         fx.gameObject.SetActive(true);
-
-        if (!islocal)
-        {
-            SendPING_Myteam(name, pos);
-        }
     }
-
 }

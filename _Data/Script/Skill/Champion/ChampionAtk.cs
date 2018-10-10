@@ -130,7 +130,7 @@ public class ChampionAtk : MonoBehaviour
                         MinionBehavior behav = AtkTargetObj.GetComponent<MinionBehavior>();
                         if (behav != null)
                         {
-                            if (behav.HitMe(myChampionData.mystat.Attack_Damage))
+                            if (behav.HitMe(myChampionData.mystat.Attack_Damage, "AD"))
                             {
                                 ResetTarget();
                             }
@@ -141,7 +141,7 @@ public class ChampionAtk : MonoBehaviour
                         ChampionBehavior behav = AtkTargetObj.GetComponent<ChampionBehavior>();
                         if (behav != null)
                         {
-                            if (behav.HitMe(myChampionData.mystat.Attack_Damage))
+                            if (behav.HitMe(myChampionData.mystat.Attack_Damage, "AD", gameObject))
                             {
                                 ResetTarget();
                             }
@@ -223,7 +223,7 @@ public class ChampionAtk : MonoBehaviour
         }
     }
 
-    private void AddEnemiesList(Collider other)
+    public void AddEnemiesList(Collider other)
     {
         if (!enemiesList.Contains(other.gameObject))
             enemiesList.Add(other.gameObject);
@@ -241,5 +241,61 @@ public class ChampionAtk : MonoBehaviour
                 AtkTargetObj = null;
             }
         }
+    }
+
+    //public void IAggroingEnemyMinion()
+    //{//적 챔피언이 없어서 잘 동작하는지 아직 확인 불가. 나중에 확인할 것.
+    //   for(int i = 0, j = enemiesList.Count; i < j; ++i)
+    //    {
+    //        if (enemiesList[i] == null)
+    //            continue;
+    //        if (!enemiesList[i].activeInHierarchy)
+    //            continue;
+    //        if(enemiesList[i].tag.Equals("Minion"))
+    //        {
+    //            MinionBehavior behav = enemiesList[i].GetComponent<MinionBehavior>();
+    //            MinionAtk minAtk = behav.minAtk;
+    //            if(minAtk.enemiesList.Contains(gameObject))
+    //            {
+    //                if (minAtk.nowTarget.tag.Equals("Waypoint"))
+    //                    minAtk.MoveTarget = minAtk.nowTarget;
+    //                minAtk.nowTarget = gameObject;
+    //                minAtk.TheAIDest.target = transform;
+    //            }
+    //        }
+    //    }
+    //}
+
+    private void AtkPauseOff()
+    {
+        isAtkPause = false;
+    }
+
+    public void PauseAtk(float f, bool moveToo = false)
+    {
+        isAtkPause = true;
+        Invoke("AtkPauseOff", f);
+        if (moveToo)
+            PauseMove(f);
+    }
+
+    public void PauseMove(float f)
+    {
+        if (TheAIPath == null)
+            TheAIPath = myChamp.GetComponent<AIPath>();
+        TheAIPath.isStopped = true;
+        Invoke("OnMove", f);
+    }
+
+    private void OnMove()
+    {
+        if (TheAIPath != null)
+            TheAIPath.isStopped = false;
+    }
+
+    public void PushMe(Vector3 finish, float time = 0.1f)
+    {
+        PauseAtk(time, true);
+        myChamp.transform.DOMove(finish, time);
     }
 }

@@ -39,11 +39,11 @@ public class UISkill : MonoBehaviour {
         }
         cd = playerObj.GetComponent<ChampionData>();
         
-        Skill_Icon[0].sprite = Resources.Load<Sprite>("Champion/ChampionSkill/" + cd.ChampionName + "/Passive");
-        Skill_Icon[1].sprite = Resources.Load<Sprite>("Champion/ChampionSkill/" + cd.ChampionName + "/Q");
-        Skill_Icon[2].sprite = Resources.Load<Sprite>("Champion/ChampionSkill/" + cd.ChampionName + "/W");
-        Skill_Icon[3].sprite = Resources.Load<Sprite>("Champion/ChampionSkill/" + cd.ChampionName + "/E");
-        Skill_Icon[4].sprite = Resources.Load<Sprite>("Champion/ChampionSkill/" + cd.ChampionName + "/R");
+        Skill_Icon[0].sprite = Resources.Load<Sprite>("ChampionSkill/" + cd.ChampionName + "/Passive");
+        Skill_Icon[1].sprite = Resources.Load<Sprite>("ChampionSkill/" + cd.ChampionName + "/Q");
+        Skill_Icon[2].sprite = Resources.Load<Sprite>("ChampionSkill/" + cd.ChampionName + "/W");
+        Skill_Icon[3].sprite = Resources.Load<Sprite>("ChampionSkill/" + cd.ChampionName + "/E");
+        Skill_Icon[4].sprite = Resources.Load<Sprite>("ChampionSkill/" + cd.ChampionName + "/R");
 
         Spell_Icon[0].sprite = Resources.Load<Sprite>("Spell/" + cd.spell_D);
         Spell_Icon[1].sprite = Resources.Load<Sprite>("Spell/" + cd.spell_F);

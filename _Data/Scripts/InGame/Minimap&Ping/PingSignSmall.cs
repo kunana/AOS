@@ -16,16 +16,22 @@ public class PingSignSmall : MonoBehaviour
     public LineRenderer Line;
 
     private bool MakeOnce = false;
-
+    public int MakeCount;
+    public int MakeMaxCount;
+    public bool CanMakePing = true;
     public Vector3 InitialCoordinate;
     public PingPooling pingPool;
-
 
     private void Awake()
     {
         if (pingPool.Equals(null))
         {
             GameObject.FindGameObjectWithTag("PingPool").GetComponent<PingPooling>();
+        }
+        else
+        {
+            MakeCount = pingPool.MakeCount;
+            MakeMaxCount = pingPool.MakeMaxCount;
         }
         gameObject.SetActive(false);
     }
@@ -39,37 +45,32 @@ public class PingSignSmall : MonoBehaviour
 
     private void Update()
     {
-        if (PhotonNetwork.player.IsLocal)
+        if (Input.GetKey(KeyCode.LeftAlt) && Input.GetMouseButton(0))
         {
-            if (Input.GetKey(KeyCode.LeftAlt) && Input.GetMouseButton(0))
-            {
-                Line.enabled = true;
-                sign = GetMousePosS(StartPos, Endpos);
-            }
-
-            if (Line.enabled && Input.GetMouseButtonUp(0))
-            {
-                if ((sign.Equals(Sign.Exit))) // Exit 를 선택 했다면
-                {
-                    gameObject.SetActive(false);
-                    return;
-                }
-
-                if (!pingPool.CanMakePing) //핑 횟수제한을 넘었다면
-                {
-                    //사용할수없습니다 메세지 출력
-                    gameObject.SetActive(false);
-                    return;
-                }
-
-                if (!MakeOnce)
-                {
-                    MakeOnce = true;
-                    MakePingSign();
-                }
-                this.gameObject.SetActive(false);
-            }
+            Line.enabled = true;
+            sign = GetMousePosS(StartPos, Endpos);
         }
+
+        if (Line.enabled && Input.GetMouseButtonUp(0))
+        {
+            if ((sign.Equals(Sign.Exit))) // Exit 를 선택 했다면
+            {
+                gameObject.SetActive(false);
+                return;
+            }
+
+            if (!CanMakePing) //핑 횟수제한을 넘었다면
+            {
+                //사용할수없습니다 메세지 출력
+                gameObject.SetActive(false);
+                return;
+            }
+
+            MakePingSign();
+            this.gameObject.SetActive(false);
+
+        }
+    
     }
 
     private void OnDisable()
@@ -80,11 +81,11 @@ public class PingSignSmall : MonoBehaviour
 
     public void setLine(string line, Vector3 pos)
     {
-        if (line.StartsWith("Start"))
+        if(line.StartsWith("Start"))
         {
             Line.SetPosition(0, pos);
         }
-        else if (line.StartsWith("End"))
+        else if(line.StartsWith("End"))
         {
             Line.SetPosition(1, pos);
         }
@@ -99,7 +100,7 @@ public class PingSignSmall : MonoBehaviour
         float result = Vector2.SignedAngle(Vector2.up, dir);
         if (result < 0)
             result = result + 360;
-
+        
         if (Vector2.Distance(StartPos, endPos) <= 6)// 중앙  
             return Sign.Exit;
         else if (result > 45 && result < 135) // 하 
@@ -114,31 +115,32 @@ public class PingSignSmall : MonoBehaviour
 
     private void MakePingSign()
     {
-        if (pingPool.MakeCount >= pingPool.MakeMaxCount)
-        {
-            print("사용할수 없습니다");
-        }
-        else
+        if (!MakeOnce)
         {
             switch (sign)
             {
                 case Sign.Help:
-                    pingPool.GetFxPool("Help", InitialCoordinate, false);
+                    pingPool.GetFxPool("Help", InitialCoordinate);
                     break;
                 case Sign.Missing:
-                    pingPool.GetFxPool("Missing", InitialCoordinate, false);
+                    pingPool.GetFxPool("Missing", InitialCoordinate);
                     break;
                 case Sign.Danger:
-                    pingPool.GetFxPool("Danger", InitialCoordinate, false);
+                    pingPool.GetFxPool("Danger", InitialCoordinate);
                     break;
                 case Sign.Going:
-                    pingPool.GetFxPool("Going", InitialCoordinate, false);
+                    pingPool.GetFxPool("Going", InitialCoordinate);
                     break;
                 case Sign.Exit:
                     break;
             }
             pingPool.MakeCount++;
+            if (pingPool.MakeCount >= pingPool.MakeMaxCount)
+            {
+                CanMakePing = false;
+            }
+            MakeOnce = false;
         }
-        MakeOnce = false;
     }
+
 }

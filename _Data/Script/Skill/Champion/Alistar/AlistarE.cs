@@ -18,9 +18,19 @@ public class AlistarE : MonoBehaviour
             MinionAtk mA = other.GetComponent<MinionBehavior>().minAtk;
             float damage = mySkill.skillData.eDamage[mySkill.TheChampionData.skill_E - 1]
                 + mySkill.Acalculate(mySkill.skillData.eAstat, mySkill.skillData.eAvalue);
-            if (other.GetComponent<MinionBehavior>().HitMe(damage))
+            if (other.GetComponent<MinionBehavior>().HitMe(damage, "AP"))
             {
                 //여기에는 나중에 평타 만들면 플레이어의 현재 공격 타겟이 죽었을 시 초기화해주는 것을 넣자.
+                mySkill.TheChampionAtk.ResetTarget();
+            }
+        }
+        else if(other.tag.Equals("Player"))
+        {
+            ChampionAtk cA = other.GetComponent<ChampionBehavior>().myChampAtk;
+            float damage = mySkill.skillData.eDamage[mySkill.TheChampionData.skill_E - 1]
+                + mySkill.Acalculate(mySkill.skillData.eAstat, mySkill.skillData.eAvalue);
+            if(other.GetComponent<ChampionBehavior>().HitMe(damage, "AP"))
+            {
                 mySkill.TheChampionAtk.ResetTarget();
             }
         }

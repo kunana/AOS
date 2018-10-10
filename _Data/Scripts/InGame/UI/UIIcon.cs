@@ -3,8 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class UIIcon : MonoBehaviour
-{
+public class UIIcon : MonoBehaviour {
 
     [HideInInspector]
     public StatClass.Stat stat = null;
@@ -13,10 +12,8 @@ public class UIIcon : MonoBehaviour
     public Image ChampionIcon;
     public Text LevelText;
     public Image ExpBar;
-
-    private void FindPlayer()
-    {   
-
+	// Use this for initialization
+	void Start () {
         GameObject Player = GameObject.FindGameObjectWithTag("Player");
         if (Player == null)
         {
@@ -25,21 +22,14 @@ public class UIIcon : MonoBehaviour
         }
         ChampionData cd = Player.GetComponent<ChampionData>();
         stat = cd.mystat;
-        ChampionIcon.sprite = Resources.Load<Sprite>("Champion/ChampionIcon/" + cd.ChampionName);
+        ChampionIcon.sprite = Resources.Load<Sprite>("ChampionIcon/" + cd.ChampionName);
     }
+	
+	// Update is called once per frame
+	void Update () {
 
-    void Start()
-    {
-        FindPlayer();
-    }
-
-
-    // Update is called once per frame
-    void Update()
-    {
-            float ExpPercent = (float)stat.Exp / (float)stat.RequireExp;
-            ExpBar.fillAmount = ExpPercent;
-        
+        float ExpPercent = (float)stat.Exp / (float)stat.RequireExp;
+        ExpBar.fillAmount = ExpPercent;
     }
 
     public void LevelUp()

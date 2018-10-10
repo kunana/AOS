@@ -23,7 +23,7 @@ public class SelectListing : Photon.MonoBehaviour
     {
         if (PhotonPlayer.IsLocal)
         {
-            GetComponent<Image>().color = new Color(0f / 255f, 200f / 255f, 255f / 255f, 0.7f);
+            GetComponent<Image>().color = new Color(233f/255f, 192f/255f, 49f/255f, 1);
             TimerText.SetActive(true);
         }
 
