@@ -8,8 +8,7 @@ public class MinionAtk : MonoBehaviour
 {
     //RichAI TheRichAI;
     public AIPath TheAIPath;
-    public AIDestinationSetter TheAIDest;
-
+    AIDestinationSetter TheAIDest;
     public List<GameObject> enemiesList = new List<GameObject>();
     string enemyColor;
     public GameObject MoveTarget = null;
@@ -22,17 +21,9 @@ public class MinionAtk : MonoBehaviour
     public bool isAtkPause = false;
     public GameObject myMinion = null;
     public Vector3 tempVec1, tempVec2;
-    public int targetPriority = 6; // default = 6
-    public float helpTime = 0; // 주변에 아군 챔피언을 친 놈이 있으면 다구리 타겟팅하는 시간
-    /* 타겟팅 우선순위
-     * 1. 아챔 때린 적챔
-     * 2. 아챔 때린 적미니언
-     * 3. 가까운 적미니언
-     * 4. 가까운 적포탑
-     * 5. 가까운 적챔피언
-     */
     private void Awake()
     {
+
         TheAIPath = myMinion.GetComponent<AIPath>();
         //TheRichAI = GetComponent<RichAI>();
         TheAIDest = myMinion.GetComponent<AIDestinationSetter>();
@@ -52,32 +43,21 @@ public class MinionAtk : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        int tp = 6;
         if (other.name.Contains(enemyColor) && other.tag.Equals("Minion"))
         {
             AddEnemiesList(other);
-            tp = 3;
         }
         else if (other.tag.Equals("Player"))
         {
             if (other.GetComponent<ChampionBehavior>().Team.Equals(enemyColor))
-            {
                 AddEnemiesList(other);
-                tp = 5;
-            }
         }
         else if (other.tag.Equals("Tower"))
         {
             if (other.GetComponent<TowerBehaviour>().Team.Equals(enemyColor))
-            {
                 AddEnemiesList(other);
-                tp = 4;
-            }
         }
-        if (tp < targetPriority)
-        {
-            TargetSearch();
-        }
+
     }
 
     private void OnTriggerExit(Collider other)
@@ -98,15 +78,10 @@ public class MinionAtk : MonoBehaviour
         }
     }
 
-    private void AddEnemiesList(Collider other, int tp = 6)
+    private void AddEnemiesList(Collider other)
     {
         if (!enemiesList.Contains(other.gameObject))
             enemiesList.Add(other.gameObject);
-        if (tp < targetPriority)
-        {
-            nowTarget = other.gameObject;
-            TheAIDest.target = nowTarget.transform;
-        }
     }
 
     private void RemoveEnemiesList(Collider other)
@@ -123,27 +98,6 @@ public class MinionAtk : MonoBehaviour
             }
         }
     }
-    
-    public void SetTarget(GameObject g)
-    {//타겟을 특수 상황일 때 억지로 고정시킴. (1 = 아군 챔피언을 적 챔피언이 때렸을 때, 2 = 아군 챔피언을 적 미니언이 때렸을 때)
-        //결과적으로 얘기하면 그냥 다구리용 애들 소집 함수임. 챔피언이 쳐맞았을 때 일정 반경에 있는 아군 미니언들에게 이걸 쏨
-        helpTime = 3;
-        int tp = 6;
-        if (g.tag.Equals("ChampionAtkRange"))
-        {
-            tp = 1;
-        }
-        else if (g.tag.Equals("MinionAtkRange"))
-        {
-            tp = 2;
-        }
-        if (targetPriority > tp)
-        {
-            targetPriority = tp;
-            nowTarget = g;
-            TheAIDest.target = nowTarget.transform;
-        }
-    }
 
     public void RemoveNowTarget()
     {//쫓던 애가 정글 등 쫓으면 안되는 영역으로 들어감
@@ -156,62 +110,8 @@ public class MinionAtk : MonoBehaviour
         }
     }
 
-    private void TargetSearch()
-    {
-        /* 타겟팅 우선순위
-         * 1. 아챔 때린 적챔
-         * 2. 아챔 때린 적미니언
-         * 3. 가까운 적미니언
-         * 4. 가까운 적포탑
-         * 5. 가까운 적챔피언
-         */
-        targetPriority = 6;
-        float dist = 1000000, nowD;
-        for (int i = 0, tp = 6; i < enemiesList.Count; ++i)
-        {
-            if (enemiesList[i].tag.Equals("Player"))
-            {
-                tp = 5;
-            }
-            else if (enemiesList[i].tag.Equals("Minion"))
-            {
-                tp = 3;
-            }
-            else if (enemiesList[i].tag.Equals("Tower"))
-            {
-                tp = 4;
-            }
-            if (targetPriority >= tp)
-            {
-                targetPriority = tp;
-                nowD = (enemiesList[i].transform.position - myMinion.transform.position).sqrMagnitude;
-                if (dist > nowD)
-                {
-                    dist = nowD;
-                    nowTarget = enemiesList[i];
-                }
-                TheAIDest.target = nowTarget.transform;
-            }
-        }
-    }
-
     private void Update()
     {
-        if (helpTime > 0 && targetPriority < 3)
-        {//주변에 아군 챔피언이 맞았으면 헬프타임이 3이 된다.
-            helpTime -= Time.deltaTime;
-            if (helpTime <= 0)
-            {//헬프타임이 처음 뜬 지 3초가 지났다
-                if (!enemiesList.Contains(nowTarget))
-                {//적이 범위를 벗어났다 => 타겟 초기화
-                    nowTarget = null;
-                }
-                else
-                { //적이 범위 안에 아직 있다 => 3초 더 팬다
-                    helpTime += 3;
-                }
-            }
-        }
         if (enemiesList.Count > 0)
         {
             bool check = false;
@@ -230,10 +130,21 @@ public class MinionAtk : MonoBehaviour
             }
             if (check)
             {//주변에 적 있는데 타겟팅 안한거 확인. 타겟팅 하자.
-                TargetSearch();
+                float dist = 1000000, nowD;
+                for (int i = 0; i < enemiesList.Count; ++i)
+                {
+                    nowD = (enemiesList[i].transform.position - myMinion.transform.position).sqrMagnitude;
+                    if (dist > nowD)
+                    {
+                        dist = nowD;
+                        nowTarget = enemiesList[i];
+                    }
+                    TheAIDest.target = nowTarget.transform;
+                }
             }
             if (nowTarget.tag != "WayPoint")
             {//현재 타겟이 웨이포인트가 아닌 공격할 대상이다.
+
                 if (TheAIPath == null)
                     TheAIPath = myMinion.GetComponent<AIPath>();
                 float a = Vector3.Distance(nowTarget.transform.position, myMinion.transform.position);
@@ -245,7 +156,7 @@ public class MinionAtk : MonoBehaviour
                 tempVec2 = myMinion.transform.position;
                 tempVec1.y = 0;
                 tempVec2.y = 0;
-                if (Vector3.Distance(tempVec1, tempVec2) > AtkRange + atkRevision)
+                if (Vector3.Distance(tempVec1,tempVec2) > AtkRange + atkRevision)
                 {//공격 범위 밖에 적이 있다.
                     if (!TheAIPath.canMove)
                     {//이동 안한다고 해뒀던 상황이면
@@ -422,7 +333,7 @@ public class MinionAtk : MonoBehaviour
                             ChampionBehavior behav = nowTarget.GetComponent<ChampionBehavior>();
                             if (behav != null)
                             {
-                                if (behav.HitMe(myBehav.stat.Attack_Damage, "AD", gameObject))
+                                if (behav.HitMe(myBehav.stat.Attack_Damage))
                                 {
                                     enemiesList.Remove(nowTarget);
                                 }
@@ -556,7 +467,7 @@ public class MinionAtk : MonoBehaviour
                 behav = nowTarget.GetComponent<ChampionBehavior>();
                 if (behav != null)
                 {
-                    if (behav.HitMe(myBehav.stat.Attack_Damage, "AD", gameObject))
+                    if (behav.HitMe(myBehav.stat.Attack_Damage))
                     {
                         enemiesList.Remove(nowTarget);
                     }

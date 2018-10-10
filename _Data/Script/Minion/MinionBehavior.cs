@@ -780,17 +780,9 @@ public class MinionBehavior : MonoBehaviour
         //gameObject.transform.position = deadVec + deadOffsetVec;
     }
 
-    public bool HitMe(float damage = 0, string atkType = "AD") // AD, AP, FD(고정 데미지 = Fixed damage)
+    public bool HitMe(float damage = 0)
     {
         bool isDead = false;
-        if (atkType.Equals("AD"))
-        {
-            damage = (damage * 100f) / (100f + stat.Attack_Def);
-        }
-        else if (atkType.Equals("AP"))
-        {
-            damage = (damage * 100f) / (100f + stat.Ability_Def);
-        }
         stat.Hp -= damage;
         //print(stat.Hp);
         if (stat.Hp < 1)

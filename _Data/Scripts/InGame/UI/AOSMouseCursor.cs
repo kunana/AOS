@@ -23,6 +23,11 @@ public class AOSMouseCursor : Photon.MonoBehaviour
         //if (base.photonView.isMine && PhotonNetwork.player.IsLocal)
         //    localPlayer = PhotonNetwork.player;
         fxPool = GameObject.FindGameObjectWithTag("MouseFxPool").GetComponent<MouseFxPooling>();
+        Target = GameObject.FindGameObjectWithTag("PlayerA*Target").transform;
+        if (Target == null)
+        {
+            Target = GameObject.FindGameObjectWithTag("PlayerA*Target").transform;
+        }
     }
 
     private void OnEnable()

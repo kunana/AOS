@@ -8,13 +8,10 @@ public class MinimapLine : MonoBehaviour
 {
 
     LineRenderer line;
-    SpriteRenderer ChampIcon;
-    string IconName;
-    GameObject Parent;
-
+    GameObject player;
     private void Awake()
     {
-       
+
 
         //동기화용. 플레이어 이름, 팀, 스펠 넘겨주기
         //if (PhotonNetwork.player.IsLocal)
@@ -29,6 +26,7 @@ public class MinimapLine : MonoBehaviour
 
         //    PhotonNetwork.RaiseEvent((byte)0, datas, true, op);
         //}
+
     }
 
     private void OnEnable()
@@ -42,11 +40,13 @@ public class MinimapLine : MonoBehaviour
         line = this.GetComponent<LineRenderer>();
         line.positionCount = 0;
 
-        ChampIcon = this.transform.GetChild(0).GetComponent<SpriteRenderer>();
-        Parent = GameObject.FindGameObjectWithTag("Player");
-        ChampionData cd = Parent.GetComponent<ChampionData>();
-        ChampIcon.sprite = Resources.Load<Sprite>("ChampionIcon/" + cd.ChampionName);
-        IconName = cd.ChampionName;
+       
+        player = this.transform.parent.GetChild(0).gameObject;
+        if (player == null)
+        {
+            StructureSetting.instance.ActiveTrue();
+            player = this.transform.parent.GetChild(0).gameObject;
+        }
     }
 
     private void OnDisable()
@@ -55,9 +55,16 @@ public class MinimapLine : MonoBehaviour
     }
     private void Update()
     {
-        var PlayerObj = Parent.transform.GetChild(0);
-        this.transform.position = new Vector3(PlayerObj.transform.position.x, transform.position.y, PlayerObj.transform.position.z);
-        
+        if (player)
+        {
+            this.transform.position = new Vector3(player.transform.position.x, transform.position.y, player.transform.position.z);
+        }
+        else
+        {
+            player = GameObject.FindGameObjectWithTag("Player");
+            this.transform.position = new Vector3(player.transform.position.x, transform.position.y, player.transform.position.z);
+        }
+
     }
 
     public void drawLine(Vector3[] endpoints)

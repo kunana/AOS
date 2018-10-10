@@ -27,16 +27,17 @@ public class Skills : MonoBehaviour
     public GameObject TempObject2 = null;
     public bool isSkillIng = false;
     public SkillClass.Skill skillData = null;
-    public UIStat TheUIStat = null;
     public virtual void InitInstance()
-    {
+    {   
+
         SkillObj = new Dictionary<string, List<GameObject>>();
         TheSkillClass = SkillClass.instance;
-        SkillParticleManager = GameObject.Find("SkillParticleManager");
+        //SkillParticleManager = GameObject.Find("SkillParticleManager");
+        SkillParticleManager = new GameObject("SkillParticleManager");
+        SkillParticleManager.transform.parent = this.transform.parent;
         TheChampionData = GetComponent<ChampionData>();
         TheSplatManager = GetComponentInChildren<SplatManager>();
         TheChampionBehaviour = GetComponent<ChampionBehavior>();
-        TheUIStat = GameObject.FindGameObjectWithTag("UICanvas").GetComponent<UICanvas>().Stat.GetComponent<UIStat>();
         InitTempValue();
 
     }
