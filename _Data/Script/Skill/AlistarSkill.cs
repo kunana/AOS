@@ -15,8 +15,6 @@ public class AlistarSkill : Skills
     private AIPath TheAIPath = null;
     public enum SSelect { none, Q, W, E, R };
     public SSelect skillselect = SSelect.none;
-    private float rSkillTempVal = 0;
-    
     public override void InitInstance()
     {
         base.InitInstance();
@@ -145,16 +143,6 @@ public class AlistarSkill : Skills
         for (int i = 0; i < 14; ++i)
             Invoke("R", 0.5f * i);
         TheChampionData.UsedR();
-        switch (TheChampionData.skill_R)
-        {
-            case 1: rSkillTempVal = 122; break; //55% -> 45 = 10000/(100+x) -> x = 1100/9 = 122.2222222222
-            case 2: rSkillTempVal = 186; break; //65% -> 35 = 10000/(100+x) -> x = 1300/7 = 185.7142857142
-            case 3: rSkillTempVal = 300; break; //75% -> 25 = 10000/(100+x) -> x = 300
-        }
-        TheChampionData.mystat.Ability_Def += rSkillTempVal;
-        TheChampionData.mystat.Attack_Def += rSkillTempVal;
-        TheUIStat.Refresh();
-        Invoke("DownDefence", 7f);
     }
 
     public override void Q()
@@ -195,21 +183,7 @@ public class AlistarSkill : Skills
             mA.PauseAtk(1f, true);
             float damage = skillData.wDamage[TheChampionData.skill_W - 1]
                 + Acalculate(skillData.wAstat, skillData.wAvalue);
-            if (TempObject1.GetComponent<MinionBehavior>().HitMe(damage, "AP"))
-            {
-                //여기에는 나중에 평타 만들면 플레이어의 현재 공격 타겟이 죽었을 시 초기화해주는 것을 넣자.
-                TheChampionAtk.ResetTarget();
-            }
-        }
-        else if (TempObject1.tag.Equals("Player"))
-        {
-            ChampionAtk cA = TempObject1.GetComponent<ChampionBehavior>().myChampAtk;
-            cA.PushMe(Vector3.up * 3 + TempObject1.transform.position
-                + (((TempObject1.transform.position - TempVector1).normalized) * 5), 0.5f);
-            cA.PauseAtk(1f, true);
-            float damage = skillData.wDamage[TheChampionData.skill_W - 1]
-    + Acalculate(skillData.wAstat, skillData.wAvalue);
-            if (TempObject1.GetComponent<ChampionBehavior>().HitMe(damage, "AP"))
+            if (TempObject1.GetComponent<MinionBehavior>().HitMe(damage))
             {
                 //여기에는 나중에 평타 만들면 플레이어의 현재 공격 타겟이 죽었을 시 초기화해주는 것을 넣자.
                 TheChampionAtk.ResetTarget();
@@ -276,15 +250,6 @@ public class AlistarSkill : Skills
         isSkillIng = false;
     }
 
-    private void DownDefence()
-    {
-        TheChampionData.mystat.Ability_Def -= rSkillTempVal;
-        TheChampionData.mystat.Attack_Def -= rSkillTempVal;
-        rSkillTempVal = 0;
-
-        TheUIStat.Refresh();
-    }
-
     public override void InitTempValue()
     {
         base.InitTempValue();
@@ -302,7 +267,7 @@ public class AlistarSkill : Skills
                 mA.PauseAtk(1f, true);
                 float damage = skillData.wDamage[TheChampionData.skill_W - 1]
                     + Acalculate(skillData.wAstat, skillData.wAvalue);
-                if (collision.gameObject.GetComponent<MinionBehavior>().HitMe(damage, "AP"))
+                if (collision.gameObject.GetComponent<MinionBehavior>().HitMe(damage))
                 {
                     //여기에는 나중에 평타 만들면 플레이어의 현재 공격 타겟이 죽었을 시 초기화해주는 것을 넣자.
                     TheChampionAtk.ResetTarget();

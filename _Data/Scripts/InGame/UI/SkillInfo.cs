@@ -3,26 +3,34 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class SkillInfo : MonoBehaviour {
+public class SkillInfo : MonoBehaviour
+{
 
     public SkillClass.Skill2 myskill = new SkillClass.Skill2();
     public string skillkey = "";
 
     private GameObject Tooltip;
     private ChampionData cd;
+    private GameObject player;
 
-    // Use this for initialization
-    void Start () {
+
+    void Start()
+    {
         UICanvas UIcanvas = GameObject.FindGameObjectWithTag("UICanvas").GetComponent<UICanvas>();
         Tooltip = UIcanvas.Tooltip;
-
-        GameObject Player = GameObject.FindGameObjectWithTag("Player");
-        if (Player == null)
+        player = GameObject.FindGameObjectWithTag("Player");
+        if (!player)
         {
             StructureSetting.instance.ActiveTrue();
-            Player = GameObject.FindGameObjectWithTag("Player");
+            player = GameObject.FindGameObjectWithTag("Player");
         }
-        cd = Player.GetComponent<ChampionData>();
+        cd = player.GetComponent<ChampionData>();
+        Skillkey();
+    }
+    
+
+    private void Skillkey()
+    {
         switch (skillkey)
         {
             case "Passive":
@@ -82,19 +90,15 @@ public class SkillInfo : MonoBehaviour {
                 myskill.Avalue = cd.myskill.rAvalue;
                 myskill.skillLevel = 0;
                 break;
-
-            default:
-                break;
         }
     }
-	
-	// Update is called once per frame
-	void Update () {
-		
-	}
 
     public void skillLevelRefresh()
     {
+        if(!cd)
+        {
+            cd = player.GetComponent<ChampionData>();
+        }
         switch (skillkey)
         {
             case "Q":
@@ -206,7 +210,7 @@ public class SkillInfo : MonoBehaviour {
                 else
                     Tooltip.transform.Find("Title_Description").GetComponent<Text>().text = "마나 " + myskill.Mana[myskill.skillLevel].ToString();
 
-                if(myskill.Cooldown[myskill.skillLevel] == 0)
+                if (myskill.Cooldown[myskill.skillLevel] == 0)
                     Tooltip.transform.Find("Cooldown").GetComponent<Text>().text = "재사용 대기시간 없음";
                 else
                     Tooltip.transform.Find("Cooldown").GetComponent<Text>().text = "재사용 대기시간 " + myskill.Cooldown[myskill.skillLevel].ToString() + "초";

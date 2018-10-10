@@ -61,7 +61,7 @@ public class ChatFunction : Photon.MonoBehaviour
     [PunRPC]
     private void SendSystemMsg(string msg)
     {
-        string systemMsg = "<color=#2E2E2E>" + msg + "</color>";
+        string systemMsg = "<color=#ffe963>" + msg + "</color>";
         AddChatToChatBox(systemMsg);
     }
 

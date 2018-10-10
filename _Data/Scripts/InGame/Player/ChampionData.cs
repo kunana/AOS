@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class ChampionData : Photon.MonoBehaviour
@@ -11,7 +12,7 @@ public class ChampionData : Photon.MonoBehaviour
     public SkillClass.Skill myskill = new SkillClass.Skill();
 
     // 챔피언명
-    [HideInInspector]
+
     public string ChampionName = "Ashe";
 
     // 스킬레벨
@@ -62,7 +63,7 @@ public class ChampionData : Photon.MonoBehaviour
     public bool RecallStart = false;
 
     // 오브젝트 받아옴
-    public GameObject UIRecall;
+    private GameObject UIRecall;
     private GameObject UIStat;
     private GameObject UIIcon;
     private GameObject UISkill;
@@ -71,51 +72,73 @@ public class ChampionData : Photon.MonoBehaviour
     private float testTime = 0;
     private float regenTime = 0;
 
+    //UI캔버스 찾았는지 체크
+    private bool Find = false;
 
+    //리콜시 못움직이게 현재위치 저장
+    Vector3 CurPos = Vector3.zero;
+    //리콜시 체력 저장
+    float CurHp = 0;
+  
 
     private void Awake()
+    {   
+        if(PhotonNetwork.player.IsLocal)
+        {
+            ChampionName = PlayerData.Instance.championName;
+            setSpell();
+            setStatSkill(ChampionName);
+        }
+       
+    }
+    private void OnLevelWasLoaded(int level)
     {
-        ChampionName = "Alistar";
-        setSpell();
-        setStatSkill(ChampionName);
+        Invoke("FindUICanvas", 3f);
+    }
 
+    private void FindUICanvas()
+    {
         UICanvas UIcanvas = GameObject.FindGameObjectWithTag("UICanvas").GetComponent<UICanvas>();
         UIStat = UIcanvas.Stat;
         UIIcon = UIcanvas.Icon;
         UISkill = UIcanvas.Skill;
+        UIRecall = UIcanvas.Recall;
+        Find = true;
     }
 
-    // Use this for initialization
-    void Start()
-    {
-
-    }
-
-    // Update is called once per frame
     void Update()
     {
-        // 스킬
-        SkillCheck();
-
-        //스펠
-        SpellCheck();
-
-        // Recall
-        RecallCheck();
-
-        // 체력, 마나재생
-        HealthManaRegen();
-
-        // 경험치 증가 테스트
-        testTime += Time.deltaTime;
-        if (testTime >= 1.0f && mystat.Level < 18)
+        if (transform.position.y < -1)
         {
-            mystat.Exp += 150;
-            testTime = 0;
+            Vector3 a = transform.position;
+            a.y = 1;
+            transform.position = a;
         }
+        if (Find)
+        {
+            // 스킬
+            SkillCheck();
 
-        if (mystat.Exp > mystat.RequireExp)
-            LevelUp();
+            //스펠
+            SpellCheck();
+
+            // Recall
+            RecallCheck();
+
+            // 체력, 마나재생
+            HealthManaRegen();
+
+            // 경험치 증가 테스트
+            testTime += Time.deltaTime;
+            if (testTime >= 1.0f && mystat.Level < 18)
+            {
+                mystat.Exp += 150;
+                testTime = 0;
+            }
+
+            if (mystat.Exp > mystat.RequireExp)
+                LevelUp();
+        }
     }
 
     public void HealthManaRegen()
@@ -405,12 +428,19 @@ public class ChampionData : Photon.MonoBehaviour
         if (Input.GetKeyDown(KeyCode.B))
         {
             Recall();
+            CurPos = transform.position;
+            CurHp = mystat.Hp;
         }
         if (RecallStart)
         {
             currentRecallTime -= Time.deltaTime;
             UIRecall.GetComponent<RecallUI>().RecallProgressBar.value = currentRecallTime / RecallTime;
             UIRecall.GetComponent<RecallUI>().RemainTime.text = currentRecallTime.ToString("N1");
+
+
+            //리콜시 제자리에서 리콜하도록
+            transform.position = CurPos;
+            // 리콜용 애니메이션 추가할것
 
             if (currentRecallTime <= 0)
             {
@@ -562,15 +592,15 @@ public class ChampionData : Photon.MonoBehaviour
 
     public void RecallComplete()
     {
-        transform.position = new Vector3(30, 0, 20);
+        transform.position = transform.parent.position;
         mystat.Hp = mystat.MaxHp;
         mystat.Mp = mystat.MaxMp;
     }
 
-    public void RecallCancelCheck()
+    public void RecallCancelCheck() // 수정바람
     {
-        // 일단 임시로 체크
-        if (Input.GetKeyDown(KeyCode.UpArrow) || Input.GetKeyDown(KeyCode.DownArrow) || Input.GetKeyDown(KeyCode.LeftArrow) || Input.GetKeyDown(KeyCode.RightArrow))
+        // 마우스 클릭했을때, 공격받았을때,
+        if (Input.GetMouseButtonDown(1) || CurHp > mystat.Hp)
         {
             RecallCancel();
         }

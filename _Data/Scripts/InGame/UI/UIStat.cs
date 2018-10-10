@@ -22,11 +22,6 @@ public class UIStat : MonoBehaviour {
         stat = GameObject.FindGameObjectWithTag("Player").GetComponent<ChampionData>().mystat;
         Refresh();
     }
-	
-	// Update is called once per frame
-	void Update () {
-		
-	}
 
     public void Refresh()
     {

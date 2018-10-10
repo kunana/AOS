@@ -73,7 +73,7 @@ namespace RTS_Cam
         public bool CameraTempLock;
         public bool CameraLock;
         private GameObject MinimapMark;
-        public Vector3 adjust = new Vector3(0,16,0);
+        public Vector3 adjust = new Vector3(0, 16, 0);
 
         /// <summary>
         /// are we following target
@@ -174,21 +174,24 @@ namespace RTS_Cam
         private void Awake()
         {
             MinimapMark = this.transform.GetChild(0).gameObject;
+        }
 
-            //포톤사용시 해제.
-            //if (base.photonView.isMine)
+        private void Start()
+        {
+            m_Transform = transform;
+            FindPlayer();
+        }
+        private void FindPlayer()
+        {
             GameObject player = GameObject.FindGameObjectWithTag("Player");
+            Player = player.transform;
             if (player == null)
             {
                 StructureSetting.instance.ActiveTrue();
                 player = GameObject.FindGameObjectWithTag("Player");
                 Player = player.transform;
             }
-        }
-
-        private void Start()
-        {
-            m_Transform = transform;
+            this.transform.position = player.transform.position + adjust;
         }
 
         private void Update()
@@ -201,7 +204,7 @@ namespace RTS_Cam
                 CameraTempLock = true;
 
             }
-            else if(Input.GetKeyUp(KeyCode.Space) && CameraTempLock)
+            else if (Input.GetKeyUp(KeyCode.Space) && CameraTempLock)
             {
                 CameraTempLock = false;
                 ResetTarget();

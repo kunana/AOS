@@ -13,12 +13,11 @@ public class TowerBehaviour : MonoBehaviour
     {
         myTowerAtk = transform.GetComponentInChildren<TowerAtk>();
     }
-    public bool HitMe(float damage = 0, string atkType = "AD") // AD, AP, FD(고정 데미지 = Fixed damage)
+    public bool HitMe(float damage = 0)
     {
         bool isDead = false;
-        damage = (damage * 100f) / (100f + defence);
         HP -= damage;
-        if (HP < 1)
+        if(HP < 1)
         {
             HP = 0;
             IamDead(0.2f);
@@ -33,7 +32,7 @@ public class TowerBehaviour : MonoBehaviour
     }
     private void Dead()
     {
-        if (myTowerAtk == null)
+        if(myTowerAtk == null)
             myTowerAtk = transform.GetComponentInChildren<TowerAtk>();
         myTowerAtk.StopAllCoroutines();
         myTowerAtk.nowTarget = null;

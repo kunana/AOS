@@ -9,6 +9,7 @@ public class KTYOPTION : MonoBehaviour
 {
 
     [Header("Json 파일경로")]
+    [SerializeField]
     private string SaveFilePath = string.Empty;
 
     [Header("비디오,볼륨,인터페이스 게임 오브젝트")]
@@ -274,7 +275,7 @@ public class KTYOPTION : MonoBehaviour
         });
     }
 
-    private void SaveOptionJson()
+    public void SaveOptionJson()
     {
         JObject root = new JObject();
         JObject option = new JObject();
@@ -290,7 +291,7 @@ public class KTYOPTION : MonoBehaviour
         File.WriteAllText(SaveFilePath, root.ToString());
     }
 
-    private void LoadOptionJson()
+    public void LoadOptionJson()
     {
         if (File.Exists(SaveFilePath))
         {

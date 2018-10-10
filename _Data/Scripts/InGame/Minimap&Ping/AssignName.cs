@@ -7,13 +7,14 @@ public class AssignName : MonoBehaviour {
 
     Text ChampName;
 
-    private void Awake()
+    private void Start()
     {
-        //ChampName = this.GetComponent<Text>();
-        //ChampName.text = GameObject.FindGameObjectWithTag("Player").GetComponent<ChampionData>().ChampionName;
+        ChampName = this.GetComponent<Text>();
+        AssignText();
     }
-    public void AssignText(string name)
+    public void AssignText()
     {
-        ChampName.text = name;
+        if(PhotonNetwork.player.IsLocal)
+        ChampName.text = PlayerData.Instance.championName;
     }
 }
